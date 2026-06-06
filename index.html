@@ -30,7 +30,7 @@ body{
   overflow-x: hidden; 
 }
 
-/* ================= HEADER ================= */
+/* ================= HEADER (تم نقل الترس هنا) ================= */
 .header{
   height:55px;
   background:var(--maroon);
@@ -86,19 +86,19 @@ body{
   margin-top:4px;
 }
 
-/* ================= INPUT ================= */
+/* ================= INPUT (تم دمج الأزرار) ================= */
 .inputBar{
   display:flex;
   padding:6px;
   background:#111;
   align-items:center;
   width: 100%;
-  gap: 5px; /* مسافة بسيطة بين العناصر */
+  gap: 5px;
 }
 
 input{
   flex:1;
-  min-width: 0; /* منع الخروج عن الشاشة */
+  min-width: 0;
   padding:10px;
   border:none;
   border-radius:20px;
@@ -111,8 +111,10 @@ button{
   border-radius:20px;
   background:var(--maroon);
   color:white;
-  flex-shrink: 0; /* الأزرار ما تصغرش */
+  flex-shrink: 0;
 }
+
+.attachGroup { display:none; gap:5px; }
 
 /* ================= EMOJI BOX ================= */
 #emojiBox{
@@ -143,50 +145,48 @@ button{
   border-radius:10px;
   z-index:9999;
 }
-
 </style>
 </head>
 
 <body>
 
 <div class="header">
+  <button onclick="toggleSettings()" style="background:none; border:none; color:var(--gold); font-size:20px;">⚙️</button>
   <div id="title">AKLAT PRO CHAT</div>
   <div class="statusDot"></div>
 </div>
 
 <div class="chat" id="chat"></div>
-
 <div id="typing" style="display:none;color:gold;padding:5px;">جاري الكتابة...</div>
 
 <div class="inputBar">
-<button onclick="toggleEmoji()">😊</button>
-<button onclick="toggleSettings()">⚙️</button>
-<button onclick="pickImage()">📷</button>
-<button onclick="pickFile()">📎</button>
-
-<input id="msg" placeholder="اكتب...">
-<button onclick="send()">إرسال</button>
-
-<input type="file" id="img" hidden>
-<input type="file" id="file" hidden>
+  <button onclick="toggleEmoji()">😊</button>
+  <button onclick="toggleAttach()">📎</button>
+  <div class="attachGroup" id="attachGroup">
+      <button onclick="pickImage()">📷</button>
+      <button onclick="pickFile()">📁</button>
+  </div>
+  <input id="msg" placeholder="اكتب...">
+  <button onclick="send()">إرسال</button>
+  <input type="file" id="img" hidden>
+  <input type="file" id="file" hidden>
 </div>
 
 <div id="emojiBox"></div>
 
 <div id="settings">
-<b>Background</b><br>
-<button onclick="setBg('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')">Sea</button>
-<button onclick="setBg('https://images.unsplash.com/photo-1519681393784-d120267933ba')">Night</button>
-<button onclick="setBg('')">Clear</button>
-<br><br>
-<b>Theme</b><br>
-<button onclick="theme('maroon')">Maroon</button>
-<button onclick="theme('dark')">Dark</button>
-<button onclick="theme('gold')">Gold</button>
+  <b>Background</b><br>
+  <button onclick="setBg('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')">Sea</button>
+  <button onclick="setBg('https://images.unsplash.com/photo-1519681393784-d120267933ba')">Night</button>
+  <button onclick="setBg('')">Clear</button>
+  <br><br>
+  <b>Theme</b><br>
+  <button onclick="theme('maroon')">Maroon</button>
+  <button onclick="theme('dark')">Dark</button>
+  <button onclick="theme('gold')">Gold</button>
 </div>
 
 <script>
-
 firebase.initializeApp({
   apiKey: "AIzaSyDxefz9m4Y4V0HfIu4UwWAKSqYb1AusZIE",
   databaseURL: "https://aklet-c0642-default-rtdb.firebaseio.com"
@@ -195,20 +195,17 @@ firebase.initializeApp({
 const roomId="room1";
 const chatRef=firebase.database().ref("chat/"+roomId);
 const typingRef=firebase.database().ref("typing/"+roomId);
-
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// إدخال الإيموجي باستخدام النقاط الرمزية (CodePoints) لضمان التوافق
-const emojiList = [128514,128517,128518,128525,128522,128557,128526,128077,128076,128591,128175,128293,10084,128640,9889,127874,127918,128241,129504,128176,127942,10024,128545,128561,128564,129303,128519,128536,129313,128523,128548,128520,128123,128169,129395,128165,127775,127919,129351,129352,129353];
+const emojis = "😂😅🤣😍😊😭😎👍👌🙏💯🔥❤️🚀⚡🎉🎮📱🧠💰🏆✨😡😱😴🤔😇😘😜😋😤😈👻💩🥳💥🌟🎯🥇🥈🥉".split("");
 const emojiBox = document.getElementById("emojiBox");
-
-emojiList.forEach(code => {
+emojis.forEach(emo => {
     let span = document.createElement("span");
-    span.innerText = String.fromCodePoint(code);
+    span.innerText = emo;
     span.style.cursor = "pointer";
     span.onclick = () => {
-        document.getElementById("msg").value += span.innerText;
+        document.getElementById("msg").value += emo;
         document.getElementById("emojiBox").style.display = "none";
     };
     emojiBox.appendChild(span);
@@ -217,14 +214,12 @@ emojiList.forEach(code => {
 function send(){
   let input=document.getElementById("msg");
   if(!input.value.trim()) return;
-
   chatRef.push({
     text:input.value,
     type:"text",
     sender:uid,
     time:new Date().toLocaleTimeString()
   });
-
   input.value="";
 }
 
@@ -232,19 +227,15 @@ chatRef.on("child_added",s=>{
   let m=s.val();
   let div=document.createElement("div");
   div.className="msg "+(m.sender===uid?"me":"other");
-
   if(m.type==="image"){
-    div.innerHTML=`<img src="${m.text}" style="width:100%;border-radius:10px;">
-    <div class="meta">${m.time}</div>`;
+    div.innerHTML=`<img src="${m.text}" style="width:100%;border-radius:10px;"><div class="meta">${m.time}</div>`;
   }
   else if(m.type==="file"){
-    div.innerHTML=`📎 <a href="${m.text}" target="_blank">ملف</a>
-    <div class="meta">${m.time}</div>`;
+    div.innerHTML=`📎 <a href="${m.text}" target="_blank">ملف</a><div class="meta">${m.time}</div>`;
   }
   else{
     div.innerHTML=`${m.text}<div class="meta">${m.time}</div>`;
   }
-
   document.getElementById("chat").appendChild(div);
   div.scrollIntoView({behavior:"smooth"});
 });
@@ -265,6 +256,11 @@ typingRef.on("value",s=>{
 function toggleEmoji(){
   let e=document.getElementById("emojiBox");
   e.style.display = e.style.display==="grid"?"none":"grid";
+}
+
+function toggleAttach(){
+  let a=document.getElementById("attachGroup");
+  a.style.display = a.style.display==="flex"?"none":"flex";
 }
 
 function toggleSettings(){
@@ -293,7 +289,6 @@ function theme(t){
 
 function pickImage(){ document.getElementById("img").click(); }
 function pickFile(){ document.getElementById("file").click(); }
-
 </script>
 </body>
 </html>
