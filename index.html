@@ -139,20 +139,16 @@ button{
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div id="title">AKLAT PRO CHAT</div>
   <div class="statusDot"></div>
 </div>
 
-<!-- CHAT -->
 <div class="chat" id="chat"></div>
 
 <div id="typing" style="display:none;color:gold;padding:5px;">جاري الكتابة...</div>
 
-<!-- INPUT -->
 <div class="inputBar">
-
 <button onclick="toggleEmoji()">😊</button>
 <button onclick="toggleSettings()">⚙️</button>
 <button onclick="pickImage()">📷</button>
@@ -163,22 +159,18 @@ button{
 
 <input type="file" id="img" hidden>
 <input type="file" id="file" hidden>
-
 </div>
 
-<!-- EMOJI (50+ REAL EMOJIS) -->
 <div id="emojiBox">
 😂 😅 🤣 😍 😊 😭 😎 👍 👌 🙏 💯 🔥 ❤️ 🚀 ⚡ 🎉 🎮 📱 🧠 💰 🏆 ✨ 😡 😱 😴 🤔 😇 😘 😜 😋 😤 😈 👻 💩 🥳 💥 🌟 🎯 🥇 🥈 🥉
 </div>
 
-<!-- SETTINGS -->
 <div id="settings">
 <b>Background</b><br>
 <button onclick="setBg('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')">Sea</button>
 <button onclick="setBg('https://images.unsplash.com/photo-1519681393784-d120267933ba')">Night</button>
 <button onclick="setBg('')">Clear</button>
 <br><br>
-
 <b>Theme</b><br>
 <button onclick="theme('maroon')">Maroon</button>
 <button onclick="theme('dark')">Dark</button>
@@ -186,8 +178,6 @@ button{
 </div>
 
 <script>
-
-/* ================= FIREBASE ================= */
 firebase.initializeApp({
   apiKey:"YOUR_KEY",
   authDomain:"YOUR_DOMAIN",
@@ -198,11 +188,9 @@ const roomId="room1";
 const chatRef=firebase.database().ref("chat/"+roomId);
 const typingRef=firebase.database().ref("typing/"+roomId);
 
-/* ================= USER ID (PRODUCTION) ================= */
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-/* ================= SEND ================= */
 function send(){
   let input=document.getElementById("msg");
   if(!input.value.trim()) return;
@@ -217,7 +205,6 @@ function send(){
   input.value="";
 }
 
-/* ================= RECEIVE ================= */
 chatRef.on("child_added",s=>{
   let m=s.val();
   let div=document.createElement("div");
@@ -240,7 +227,6 @@ chatRef.on("child_added",s=>{
   div.scrollIntoView({behavior:"smooth"});
 });
 
-/* ================= TYPING ================= */
 document.getElementById("msg").addEventListener("input",()=>{
   typingRef.set({user:uid,typing:true});
   clearTimeout(window.t);
@@ -254,7 +240,6 @@ typingRef.on("value",s=>{
   document.getElementById("typing").style.display = v?.typing ? "block":"none";
 });
 
-/* ================= EMOJI ================= */
 function toggleEmoji(){
   let e=document.getElementById("emojiBox");
   e.style.display = e.style.display==="block"?"none":"block";
@@ -266,18 +251,15 @@ document.getElementById("emojiBox").onclick=e=>{
   }
 };
 
-/* ================= SETTINGS ================= */
 function toggleSettings(){
   let s=document.getElementById("settings");
   s.style.display=s.style.display==="block"?"none":"block";
 }
 
-/* ================= BACKGROUND ================= */
 function setBg(url){
   document.body.style.backgroundImage = url ? `url(${url})` : "none";
 }
 
-/* ================= THEME ================= */
 function theme(t){
   if(t==="maroon"){
     document.documentElement.style.setProperty('--maroon','#800000');
@@ -293,7 +275,6 @@ function theme(t){
   }
 }
 
-/* ================= IMAGE UPLOAD ================= */
 function pickImage(){ document.getElementById("img").click(); }
 
 document.getElementById("img").onchange=async e=>{
@@ -317,7 +298,6 @@ document.getElementById("img").onchange=async e=>{
   });
 };
 
-/* ================= FILE UPLOAD ================= */
 function pickFile(){ document.getElementById("file").click(); }
 
 document.getElementById("file").onchange=async e=>{
@@ -342,6 +322,67 @@ document.getElementById("file").onchange=async e=>{
   });
 };
 
+window.send = send;
+</script>
+
+<!-- ================= WHATSAPP PRO LAYER (ADDITION ONLY) ================= -->
+<script>
+(function(){
+
+const statusRef = firebase.database().ref("status/" + roomId);
+
+/* ONLINE / OFFLINE */
+function setOnline(){
+  statusRef.set({uid,state:"online",time:Date.now()});
+}
+function setOffline(){
+  statusRef.set({uid,state:"offline",time:Date.now()});
+}
+setOnline();
+window.addEventListener("beforeunload", setOffline);
+
+/* SEEN */
+chatRef.on("child_added",s=>{
+  const msg=s.val();
+  if(msg.sender!==uid){
+    setTimeout(()=>s.ref.update({seen:true}),400);
+  }
+});
+
+/* STATUS DOT */
+statusRef.on("value",s=>{
+  const v=s.val();
+  const dot=document.querySelector(".statusDot");
+  if(dot) dot.style.background=(v&&v.state==="online")?"lime":"gray";
+});
+
+/* TYPING */
+typingRef.on("value",s=>{
+  const v=s.val();
+  const el=document.getElementById("typing");
+  if(el) el.style.display=v?.typing?"block":"none";
+});
+
+})();
+</script>
+
+<!-- ================= BLOCKED WORDS (ADDITION ONLY) ================= -->
+<script>
+const blockedWords=["كلمة1","كلمة2","ممنوع","سب","شتيمة"];
+
+(function(){
+  const originalSend=window.send;
+  window.send=function(){
+    let input=document.getElementById("msg");
+    for(let w of blockedWords){
+      if(input.value.includes(w)){
+        alert("❌ ممنوع إرسال هذه الكلمة");
+        return;
+      }
+    }
+    return originalSend.apply(this,arguments);
+  };
+})();
 </script>
 
 </body>
