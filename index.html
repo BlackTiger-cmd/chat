@@ -37,6 +37,8 @@ body{
   padding:0 10px;
   border-bottom:2px solid var(--gold);
   color:var(--gold);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .statusDot{
@@ -254,9 +256,11 @@ function toggleEmoji(){
   e.style.display = e.style.display==="block"?"none":"block";
 }
 
+// التعديل هنا: إضافة الإيموشن كنص صريح
 document.getElementById("emojiBox").onclick=e=>{
   if(e.target.innerText){
     document.getElementById("msg").value+=e.target.innerText;
+    document.getElementById("emojiBox").style.display="none";
   }
 };
 
@@ -292,4 +296,3 @@ function pickFile(){ document.getElementById("file").click(); }
 
 </body>
 </html>
-
