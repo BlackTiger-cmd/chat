@@ -198,14 +198,15 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-const emojis = "😂😅🤣😍😊😭😎👍👌🙏💯🔥❤️🚀⚡🎉🎮📱🧠💰🏆✨😡😱😴🤔😇😘😜😋😤😈👻💩🥳💥🌟🎯🥇🥈🥉".split("");
+// الإيموجي تم تحويلها لـ unicode entities لضمان ظهورها
+const emojis = ["&#128514;","&#128517;","&#129315;","&#128525;","&#128522;","&#128557;","&#128526;","&#128077;","&#128076;","&#128591;","&#128175;","&#128293;","&#10084;","&#128640;","&#9889;","&#127873;","&#127918;","&#128241;","&#129504;","&#128176;","&#127942;","&#10024;","&#128545;","&#128561;","&#128564;","&#129300;","&#128519;","&#128536;","&#128540;","&#128523;","&#128548;","&#128520;","&#128123;","&#128169;","&#129395;","&#128165;","&#127775;","&#127919;","&#129351;","&#129352;","&#129353;","&#127874;"];
 const emojiBox = document.getElementById("emojiBox");
 emojis.forEach(emo => {
     let span = document.createElement("span");
-    span.innerText = emo;
+    span.innerHTML = emo;
     span.style.cursor = "pointer";
     span.onclick = () => {
-        document.getElementById("msg").value += emo;
+        document.getElementById("msg").value += span.innerText;
         document.getElementById("emojiBox").style.display = "none";
     };
     emojiBox.appendChild(span);
@@ -250,7 +251,6 @@ document.getElementById("msg").addEventListener("input",()=>{
 
 typingRef.on("value",s=>{
   let v=s.val();
-  // تعديل منطق جاري الكتابة: يظهر فقط إذا كان الطرف الآخر هو الذي يكتب
   if(v && v.typing && v.user !== uid) {
       document.getElementById("typing").style.display = "block";
   } else {
@@ -260,7 +260,6 @@ typingRef.on("value",s=>{
 
 function toggleEmoji(){
   let e=document.getElementById("emojiBox");
-  // تبديل العرض بين grid و none
   e.style.display = (e.style.display === "grid") ? "none" : "grid";
 }
 
@@ -298,3 +297,4 @@ function pickFile(){ document.getElementById("file").click(); }
 </script>
 </body>
 </html>
+
