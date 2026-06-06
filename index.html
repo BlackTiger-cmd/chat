@@ -192,11 +192,11 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
+// الدالة المعدلة لضمان عمل الزرار في التطبيق وبره
 function send(){
   let input=document.getElementById("msg");
   if(!input.value.trim()) return;
 
-  // إرسال للفايربيز
   chatRef.push({
     text:input.value,
     type:"text",
@@ -204,19 +204,12 @@ function send(){
     time:new Date().toLocaleTimeString()
   });
 
-  // إضافة تجريبية فورية للشاشة عشان تتأكد إن الزرار شغال
-  let div=document.createElement("div");
-  div.className="msg me";
-  div.innerHTML = `${input.value}<div class="meta">${new Date().toLocaleTimeString()}</div>`;
-  document.getElementById("chat").appendChild(div);
-  div.scrollIntoView({behavior:"smooth"});
-
   input.value="";
 }
 
 chatRef.on("child_added",s=>{
   let m=s.val();
-  if(m.sender === uid) return; // منع التكرار
+  if(m.sender === uid) return; 
   let div=document.createElement("div");
   div.className="msg "+(m.sender===uid?"me":"other");
 
