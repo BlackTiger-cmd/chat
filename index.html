@@ -187,9 +187,9 @@ button{
 </div>
 
 <script>
-// إعدادات كلاودينري - ضع بياناتك هنا
-const CLOUD_NAME = "YOUR_CLOUD_NAME"; 
-const UPLOAD_PRESET = "YOUR_UPLOAD_PRESET";
+// إعدادات كلاودينري الثابتة
+const CLOUD_NAME = "dzjydogjz"; 
+const UPLOAD_PRESET = "unsigned_preset";
 
 firebase.initializeApp({
   apiKey: "AIzaSyDxefz9m4Y4V0HfIu4UwWAKSqYb1AusZIE",
@@ -204,11 +204,17 @@ localStorage.setItem("uid", uid);
 
 let isInitialLoad = true;
 
-// كود رفع الصور على Cloudinary
+// كود رفع الصور على Cloudinary (جاهز للعمل في نيترون)
 document.getElementById("img").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // إشعار بسيط ببدء الرفع
+    const loadingMsg = document.createElement("div");
+    loadingMsg.className = "msg other";
+    loadingMsg.innerText = "جاري رفع الصورة...";
+    document.getElementById("chat").appendChild(loadingMsg);
+    
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
@@ -220,14 +226,17 @@ document.getElementById("img").addEventListener("change", async (e) => {
         });
         const data = await response.json();
         
-        chatRef.push({
-            text: data.secure_url,
-            type: "image",
-            sender: uid,
-            time: new Date().toLocaleTimeString()
-        });
+        if(data.secure_url) {
+            chatRef.push({
+                text: data.secure_url,
+                type: "image",
+                sender: uid,
+                time: new Date().toLocaleTimeString()
+            });
+            loadingMsg.remove(); // إزالة رسالة "جاري الرفع"
+        }
     } catch (err) {
-        console.error("خطأ في رفع الصورة", err);
+        loadingMsg.innerText = "فشل الرفع، حاول مرة أخرى.";
     }
 });
 
