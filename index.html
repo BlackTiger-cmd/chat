@@ -180,9 +180,8 @@ button{
 <script>
 
 firebase.initializeApp({
-  apiKey:"YOUR_KEY",
-  authDomain:"YOUR_DOMAIN",
-  databaseURL:"YOUR_DB"
+  apiKey: "AIzaSyDxefz9m4Y4V0HfIu4UwWAKSqYb1AusZIE",
+  databaseURL: "https://aklet-c0642-default-rtdb.firebaseio.com"
 });
 
 const roomId="room1";
@@ -192,11 +191,12 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// الدالة المعدلة لضمان عمل الزرار في التطبيق وبره
+// دالة الإرسال المعدلة لضمان عمل الزرار
 function send(){
   let input=document.getElementById("msg");
   if(!input.value.trim()) return;
 
+  // إرسال للفايربيز
   chatRef.push({
     text:input.value,
     type:"text",
@@ -204,12 +204,19 @@ function send(){
     time:new Date().toLocaleTimeString()
   });
 
+  // إضافة تجريبية فورية للشاشة عشان تتأكد إن الزرار شغال
+  let div=document.createElement("div");
+  div.className="msg me";
+  div.innerHTML = `${input.value}<div class="meta">${new Date().toLocaleTimeString()}</div>`;
+  document.getElementById("chat").appendChild(div);
+  div.scrollIntoView({behavior:"smooth"});
+
   input.value="";
 }
 
 chatRef.on("child_added",s=>{
   let m=s.val();
-  if(m.sender === uid) return; 
+  if(m.sender === uid) return; // منع التكرار
   let div=document.createElement("div");
   div.className="msg "+(m.sender===uid?"me":"other");
 
