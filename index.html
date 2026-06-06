@@ -155,7 +155,7 @@ button{
 <button onclick="pickFile()">📎</button>
 
 <input id="msg" placeholder="اكتب...">
-<button id="sendBtn">إرسال</button>
+<button onclick="send()">إرسال</button>
 
 <input type="file" id="img" hidden>
 <input type="file" id="file" hidden>
@@ -196,6 +196,7 @@ function send(){
   let input=document.getElementById("msg");
   if(!input.value.trim()) return;
 
+  // إرسال للفايربيز
   chatRef.push({
     text:input.value,
     type:"text",
@@ -203,18 +204,20 @@ function send(){
     time:new Date().toLocaleTimeString()
   });
 
+  // إضافة تجريبية فورية للشاشة عشان تتأكد إن الزرار شغال
+  let div=document.createElement("div");
+  div.className="msg me";
+  div.innerHTML = `${input.value}<div class="meta">${new Date().toLocaleTimeString()}</div>`;
+  document.getElementById("chat").appendChild(div);
+  div.scrollIntoView({behavior:"smooth"});
+
   input.value="";
 }
 
-/* 🔥 FIX: ربط الزر بشكل مباشر (ده سبب المشكلة عندك) */
-document.addEventListener("DOMContentLoaded", ()=>{
-  document.getElementById("sendBtn").onclick = send;
-});
-
 chatRef.on("child_added",s=>{
   let m=s.val();
+  if(m.sender === uid) return; // منع التكرار
   let div=document.createElement("div");
-
   div.className="msg "+(m.sender===uid?"me":"other");
 
   if(m.type==="image"){
@@ -285,9 +288,8 @@ function pickImage(){ document.getElementById("img").click(); }
 
 function pickFile(){ document.getElementById("file").click(); }
 
-window.send = send;
-
 </script>
 
 </body>
 </html>
+
