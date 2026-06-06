@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+:root{
+  --bg:#800000;          /* عنابي */
+  --bg-dark:#4a0000;     /* الهيدر */
+  --accent:#d4af37;      /* ذهبي */
+  --text:#ffffff;
+}
+
+/* BODY */
+body{
+  margin:0;
+  font-family: Arial;
+  background: var(--bg);
+  overflow:hidden;
+  color:var(--text);
+}
+
+/* HEADER */
+.header{
+  height:55px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 12px;
+  background: var(--bg-dark);
+  border-bottom: 2px solid var(--accent);
+}
+
+.title{
+  font-weight:bold;
+  font-size:14px;
+  color: var(--accent);
+}
+
+.status{
+  font-size:11px;
+  padding:3px 8px;
+  border-radius:10px;
+}
+
+.online{
+  background:rgba(34,197,94,0.15);
+  color:#22c55e;
+}
+
+.offline{
+  background:rgba(239,68,68,0.15);
+  color:#ef4444;
+}
+
+/* CHAT */
+.chat{
+  height:calc(100vh - 120px);
+  overflow-y:auto;
+  padding:10px;
+}
+
+/* MESSAGE */
+.msg{
+  max-width:75%;
+  margin:8px 0;
+  padding:10px 12px;
+  border-radius:16px;
+  font-size:14px;
+  line-height:1.4;
+  animation:pop .2s ease;
+  box-shadow:0 4px 12px rgba(0,0,0,0.35);
+}
+
+/* ME */
+.me{
+  margin-left:auto;
+  background: var(--accent);
+  color:#000;
+  border-bottom-right-radius:6px;
+}
+
+/* OTHER */
+.other{
+  background:#5c0000;
+  border:1px solid var(--accent);
+  border-bottom-left-radius:6px;
+}
+
+/* TIME */
+.time{
+  display:block;
+  font-size:10px;
+  margin-top:5px;
+  opacity:0.6;
+}
+
+/* TYPING */
+.typing{
+  display:none;
+  font-size:12px;
+  color: var(--accent);
+  padding:4px 10px;
+}
+
+/* INPUT */
+.inputBar{
+  height:55px;
+  display:flex;
+  align-items:center;
+  padding:6px;
+  background: var(--bg-dark);
+  border-top: 1px solid var(--accent);
+}
+
+input{
+  flex:1;
+  border:1px solid var(--accent);
+  outline:none;
+  padding:10px;
+  border-radius:20px;
+  background: rgba(0,0,0,0.25);
+  color:white;
+}
+
+button{
+  margin-left:6px;
+  border:none;
+  padding:10px 15px;
+  border-radius:20px;
+  background: var(--accent);
+  color:#000;
+  font-weight:bold;
+}
+
+/* ANIMATION */
+@keyframes pop{
+  from{opacity:0; transform:translateY(8px) scale(.98);}
+  to{opacity:1; transform:translateY(0) scale(1);}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="title" id="chatTitle">أكلة الهوانم</div>
+  <div class="status online" id="netStatus">متصل</div>
+</div>
+
+<div class="chat" id="chat"></div>
+
+<div class="typing" id="typing">جاري الكتابة...</div>
+
+<div class="inputBar">
+  <input id="msg" placeholder="اكتب رسالتك...">
+  <button onclick="send()">إرسال</button>
+</div>
+
+<script>
+
+let userAtBottom = true;
+
+/* SCROLL */
+document.getElementById("chat").addEventListener("scroll", function(){
+  let el=this;
+  userAtBottom = (el.scrollHeight - el.scrollTop - el.clientHeight < 50);
+});
+
+/* ADD MESSAGE */
+function addMessage(text,type){
+
+  let div=document.createElement("div");
+  div.className="msg "+type;
+
+  let time = new Date().toLocaleTimeString();
+
+  div.innerHTML=`
+    ${text}
+    <span class="time">${time}</span>
+  `;
+
+  document.getElementById("chat").appendChild(div);
+
+  if(userAtBottom){
+    div.scrollIntoView({behavior:"smooth"});
+  }
+}
+
+/* NIOTRON HOOK */
+function addMessageExternal(text,type){
+  addMessage(text,type);
+}
+
+/* SEND */
+function send(){
+  let input=document.getElementById("msg");
+  if(input.value.trim()=="") return;
+
+  addMessage(input.value,"me");
+
+  if(window.AppInventor){
+    window.AppInventor.setWebViewString(input.value);
+  }
+
+  input.value="";
+}
+
+/* TITLE */
+function setChatTitle(text){
+  document.getElementById("chatTitle").innerText=text;
+}
+
+/* TYPING */
+function setTyping(state){
+  document.getElementById("typing").style.display = state ? "block":"none";
+}
+
+/* NET */
+function updateNetStatus(isOnline){
+  let el=document.getElementById("netStatus");
+
+  if(isOnline){
+    el.innerText="متصل";
+    el.className="status online";
+  }else{
+    el.innerText="غير متصل";
+    el.className="status offline";
+  }
+}
+
+window.addEventListener("online", ()=>updateNetStatus(true));
+window.addEventListener("offline", ()=>updateNetStatus(false));
+
+</script>
+
+</body>
+</html>
