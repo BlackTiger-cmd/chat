@@ -7,138 +7,158 @@
 <style>
 
 :root{
-  --bg:#800000;          /* عنابي */
-  --bg-dark:#4a0000;     /* الهيدر */
-  --accent:#d4af37;      /* ذهبي */
-  --text:#ffffff;
+  --maroon:#800000;
+  --gold:#d4af37;
+  --bg:#f6f6f6;
+  --white:#ffffff;
+  --text:#111;
+  --soft:#eaeaea;
 }
 
-/* BODY */
+/* PAGE */
 body{
   margin:0;
   font-family: Arial;
-  background: var(--bg);
-  overflow:hidden;
-  color:var(--text);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
 }
 
 /* HEADER */
 .header{
   height:55px;
+  background:var(--maroon);
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding:0 12px;
-  background: var(--bg-dark);
-  border-bottom: 2px solid var(--accent);
+  color:white;
+  border-bottom:2px solid var(--gold);
 }
 
 .title{
+  color:var(--gold);
   font-weight:bold;
-  font-size:14px;
-  color: var(--accent);
 }
 
-.status{
-  font-size:11px;
-  padding:3px 8px;
-  border-radius:10px;
-}
-
-.online{
-  background:rgba(34,197,94,0.15);
-  color:#22c55e;
-}
-
-.offline{
-  background:rgba(239,68,68,0.15);
-  color:#ef4444;
-}
-
-/* CHAT */
+/* CHAT AREA */
 .chat{
-  height:calc(100vh - 120px);
+  flex:1;
   overflow-y:auto;
-  padding:10px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
 }
 
 /* MESSAGE */
 .msg{
   max-width:75%;
-  margin:8px 0;
+  margin:6px 0;
   padding:10px 12px;
-  border-radius:16px;
+  border-radius:14px;
   font-size:14px;
   line-height:1.4;
-  animation:pop .2s ease;
-  box-shadow:0 4px 12px rgba(0,0,0,0.35);
+  animation:pop .15s ease;
+  position:relative;
+  word-wrap:break-word;
 }
 
-/* ME */
+/* YOU */
 .me{
   margin-left:auto;
-  background: var(--accent);
+  background:var(--gold);
   color:#000;
-  border-bottom-right-radius:6px;
+  border-bottom-right-radius:5px;
 }
 
-/* OTHER */
+/* CLIENT */
 .other{
-  background:#5c0000;
-  border:1px solid var(--accent);
-  border-bottom-left-radius:6px;
+  background:var(--white);
+  border:1px solid #eee;
+  border-bottom-left-radius:5px;
 }
 
 /* TIME */
 .time{
   display:block;
   font-size:10px;
-  margin-top:5px;
+  margin-top:4px;
   opacity:0.6;
-}
-
-/* TYPING */
-.typing{
-  display:none;
-  font-size:12px;
-  color: var(--accent);
-  padding:4px 10px;
 }
 
 /* INPUT */
 .inputBar{
-  height:55px;
   display:flex;
   align-items:center;
-  padding:6px;
-  background: var(--bg-dark);
-  border-top: 1px solid var(--accent);
+  padding:8px;
+  background:var(--white);
+  border-top:1px solid #ddd;
 }
 
+/* INPUT FIELD */
 input{
   flex:1;
-  border:1px solid var(--accent);
-  outline:none;
+  border:1px solid #ddd;
   padding:10px;
   border-radius:20px;
-  background: rgba(0,0,0,0.25);
+  outline:none;
+}
+
+/* BUTTONS */
+.iconBtn{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:none;
+  margin-left:6px;
+  background:var(--maroon);
   color:white;
 }
 
-button{
+.sendBtn{
   margin-left:6px;
   border:none;
-  padding:10px 15px;
+  padding:10px 14px;
   border-radius:20px;
-  background: var(--accent);
+  background:var(--gold);
   color:#000;
   font-weight:bold;
 }
 
+/* EMOJI PANEL */
+.emojiBox{
+  display:none;
+  position:absolute;
+  bottom:70px;
+  left:10px;
+  right:10px;
+  background:white;
+  border-radius:14px;
+  padding:10px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+  max-height:220px;
+  overflow-y:auto;
+}
+
+.emojiBox span{
+  font-size:22px;
+  margin:6px;
+  display:inline-block;
+}
+
+/* TYPING */
+.typing{
+  font-size:12px;
+  padding:6px 10px;
+  color:var(--maroon);
+  display:none;
+}
+
 /* ANIMATION */
 @keyframes pop{
-  from{opacity:0; transform:translateY(8px) scale(.98);}
-  to{opacity:1; transform:translateY(0) scale(1);}
+  from{opacity:0; transform:translateY(8px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 </style>
@@ -147,28 +167,53 @@ button{
 <body>
 
 <div class="header">
-  <div class="title" id="chatTitle">أكلة الهوانم</div>
-  <div class="status online" id="netStatus">متصل</div>
+  <div class="title" id="chatTitle">Chat</div>
+  <div>🟢 Online</div>
 </div>
 
 <div class="chat" id="chat"></div>
 
 <div class="typing" id="typing">جاري الكتابة...</div>
 
+<div class="emojiBox" id="emojiBox">
+  <span onclick="addEmoji('😂')">😂</span>
+  <span onclick="addEmoji('😅')">😅</span>
+  <span onclick="addEmoji('🤣')">🤣</span>
+  <span onclick="addEmoji('😭')">😭</span>
+  <span onclick="addEmoji('😍')">😍</span>
+  <span onclick="addEmoji('😊')">😊</span>
+  <span onclick="addEmoji('👍')">👍</span>
+  <span onclick="addEmoji('🔥')">🔥</span>
+  <span onclick="addEmoji('❤️')">❤️</span>
+  <span onclick="addEmoji('💯')">💯</span>
+  <span onclick="addEmoji('👏')">👏</span>
+  <span onclick="addEmoji('🤔')">🤔</span>
+</div>
+
 <div class="inputBar">
+
+  <button class="iconBtn" onclick="toggleEmoji()">😊</button>
+  <button class="iconBtn" onclick="toggleTyping()">⌨️</button>
+  <button class="iconBtn">🎤</button>
+
   <input id="msg" placeholder="اكتب رسالتك...">
-  <button onclick="send()">إرسال</button>
+
+  <button class="sendBtn" onclick="send()">إرسال</button>
+
 </div>
 
 <script>
 
-let userAtBottom = true;
+let input=document.getElementById("msg");
+let emojiBox=document.getElementById("emojiBox");
+let typing=document.getElementById("typing");
 
-/* SCROLL */
-document.getElementById("chat").addEventListener("scroll", function(){
-  let el=this;
-  userAtBottom = (el.scrollHeight - el.scrollTop - el.clientHeight < 50);
-});
+/* SEND */
+function send(){
+  if(input.value.trim()=="") return;
+  addMessage(input.value,"me");
+  input.value="";
+}
 
 /* ADD MESSAGE */
 function addMessage(text,type){
@@ -176,7 +221,7 @@ function addMessage(text,type){
   let div=document.createElement("div");
   div.className="msg "+type;
 
-  let time = new Date().toLocaleTimeString();
+  let time=new Date().toLocaleTimeString();
 
   div.innerHTML=`
     ${text}
@@ -184,56 +229,34 @@ function addMessage(text,type){
   `;
 
   document.getElementById("chat").appendChild(div);
-
-  if(userAtBottom){
-    div.scrollIntoView({behavior:"smooth"});
-  }
+  div.scrollIntoView({behavior:"smooth"});
 }
 
-/* NIOTRON HOOK */
+/* EMOJI */
+function toggleEmoji(){
+  emojiBox.style.display =
+    emojiBox.style.display==="block" ? "none":"block";
+}
+
+function addEmoji(e){
+  input.value += e;
+}
+
+/* TYPING */
+function toggleTyping(){
+  typing.style.display =
+    typing.style.display==="block" ? "none":"block";
+}
+
+/* NIOTRON */
 function addMessageExternal(text,type){
   addMessage(text,type);
-}
-
-/* SEND */
-function send(){
-  let input=document.getElementById("msg");
-  if(input.value.trim()=="") return;
-
-  addMessage(input.value,"me");
-
-  if(window.AppInventor){
-    window.AppInventor.setWebViewString(input.value);
-  }
-
-  input.value="";
 }
 
 /* TITLE */
 function setChatTitle(text){
   document.getElementById("chatTitle").innerText=text;
 }
-
-/* TYPING */
-function setTyping(state){
-  document.getElementById("typing").style.display = state ? "block":"none";
-}
-
-/* NET */
-function updateNetStatus(isOnline){
-  let el=document.getElementById("netStatus");
-
-  if(isOnline){
-    el.innerText="متصل";
-    el.className="status online";
-  }else{
-    el.innerText="غير متصل";
-    el.className="status offline";
-  }
-}
-
-window.addEventListener("online", ()=>updateNetStatus(true));
-window.addEventListener("offline", ()=>updateNetStatus(false));
 
 </script>
 
