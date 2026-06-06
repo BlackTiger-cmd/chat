@@ -168,7 +168,7 @@ button{
   </div>
   <input id="msg" placeholder="اكتب...">
   <button onclick="send()">إرسال</button>
-  <input type="file" id="img" hidden>
+  <input type="file" id="img" hidden accept="image/*">
   <input type="file" id="file" hidden>
 </div>
 
@@ -187,6 +187,10 @@ button{
 </div>
 
 <script>
+// إعدادات كلاودينري - ضع بياناتك هنا
+const CLOUD_NAME = "YOUR_CLOUD_NAME"; 
+const UPLOAD_PRESET = "YOUR_UPLOAD_PRESET";
+
 firebase.initializeApp({
   apiKey: "AIzaSyDxefz9m4Y4V0HfIu4UwWAKSqYb1AusZIE",
   databaseURL: "https://aklet-c0642-default-rtdb.firebaseio.com"
@@ -198,8 +202,34 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// متغير لتحديد ما إذا كان التحميل الأولي قد انتهى
 let isInitialLoad = true;
+
+// كود رفع الصور على Cloudinary
+document.getElementById("img").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+            method: "POST",
+            body: formData
+        });
+        const data = await response.json();
+        
+        chatRef.push({
+            text: data.secure_url,
+            type: "image",
+            sender: uid,
+            time: new Date().toLocaleTimeString()
+        });
+    } catch (err) {
+        console.error("خطأ في رفع الصورة", err);
+    }
+});
 
 const emojis = ["&#128514;","&#128517;","&#129315;","&#128525;","&#128522;","&#128557;","&#128526;","&#128077;","&#128076;","&#128591;","&#128175;","&#128293;","&#10084;","&#128640;","&#9889;","&#127873;","&#127918;","&#128241;","&#129504;","&#128176;","&#127942;","&#10024;","&#128545;","&#128561;","&#128564;","&#129300;","&#128519;","&#128536;","&#128540;","&#128523;","&#128548;","&#128520;","&#128123;","&#128169;","&#129395;","&#128165;","&#127775;","&#127919;","&#129351;","&#129352;","&#129353;","&#127874;"];
 const emojiBox = document.getElementById("emojiBox");
@@ -241,7 +271,6 @@ chatRef.on("child_added",s=>{
   }
   document.getElementById("chat").appendChild(div);
   
-  // إذا كان التحميل الأولي انتهى، نستخدم الحركة السلسة، وإلا نقفز للآخر مباشرة
   if(!isInitialLoad) {
       div.scrollIntoView({behavior:"smooth"});
   } else {
@@ -249,7 +278,6 @@ chatRef.on("child_added",s=>{
   }
 });
 
-// عند انتهاء تحميل القيمة الأولى من Firebase
 chatRef.once("value", () => {
     isInitialLoad = false;
     document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
