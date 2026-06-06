@@ -55,6 +55,8 @@ body{
   padding:10px;
   display:flex;
   flex-direction:column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .msg{
@@ -89,6 +91,8 @@ body{
   padding:6px;
   background:#111;
   align-items:center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 input{
@@ -122,7 +126,11 @@ button{
   overflow:auto;
   z-index:999;
   font-size:22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
 }
+
+.emoji-item { cursor: pointer; text-align: center; }
 
 /* ================= SETTINGS ================= */
 #settings{
@@ -163,9 +171,7 @@ button{
 <input type="file" id="file" hidden>
 </div>
 
-<div id="emojiBox">
-😂 😅 🤣 😍 😊 😭 😎 👍 👌 🙏 💯 🔥 ❤️ 🚀 ⚡ 🎉 🎮 📱 🧠 💰 🏆 ✨ 😡 😱 😴 🤔 😇 😘 😜 😋 😤 😈 👻 💩 🥳 💥 🌟 🎯 🥇 🥈 🥉
-</div>
+<div id="emojiBox"></div>
 
 <div id="settings">
 <b>Background</b><br>
@@ -193,12 +199,21 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// دالة الإرسال المعدلة لضمان عمل الزرار
+// إعداد الإيموشنز كعناصر منفصلة
+const emojis = "😂😅🤣😍😊😭😎👍👌🙏💯🔥❤️🚀⚡🎉🎮📱🧠💰🏆✨😡😱😴🤔😇😘😜😋😤😈👻💩🥳💥🌟🎯🥇🥈🥉".split("");
+const emojiBox = document.getElementById("emojiBox");
+emojis.forEach(emo => {
+    let span = document.createElement("span");
+    span.className = "emoji-item";
+    span.innerText = emo;
+    span.onclick = () => { document.getElementById("msg").value += emo; };
+    emojiBox.appendChild(span);
+});
+
 function send(){
   let input=document.getElementById("msg");
   if(!input.value.trim()) return;
 
-  // إرسال للفايربيز
   chatRef.push({
     text:input.value,
     type:"text",
@@ -206,7 +221,6 @@ function send(){
     time:new Date().toLocaleTimeString()
   });
 
-  // إضافة تجريبية فورية للشاشة عشان تتأكد إن الزرار شغال
   let div=document.createElement("div");
   div.className="msg me";
   div.innerHTML = `${input.value}<div class="meta">${new Date().toLocaleTimeString()}</div>`;
@@ -218,7 +232,7 @@ function send(){
 
 chatRef.on("child_added",s=>{
   let m=s.val();
-  if(m.sender === uid) return; // منع التكرار
+  if(m.sender === uid) return;
   let div=document.createElement("div");
   div.className="msg "+(m.sender===uid?"me":"other");
 
@@ -253,16 +267,8 @@ typingRef.on("value",s=>{
 
 function toggleEmoji(){
   let e=document.getElementById("emojiBox");
-  e.style.display = e.style.display==="block"?"none":"block";
+  e.style.display = e.style.display==="grid"?"none":"grid";
 }
-
-// التعديل هنا: إضافة الإيموشن كنص صريح
-document.getElementById("emojiBox").onclick=e=>{
-  if(e.target.innerText){
-    document.getElementById("msg").value+=e.target.innerText;
-    document.getElementById("emojiBox").style.display="none";
-  }
-};
 
 function toggleSettings(){
   let s=document.getElementById("settings");
@@ -296,3 +302,4 @@ function pickFile(){ document.getElementById("file").click(); }
 
 </body>
 </html>
+
