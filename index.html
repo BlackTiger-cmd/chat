@@ -27,7 +27,7 @@ body{
   flex-direction:column;
   background:var(--dark);
   background-size:cover;
-  overflow-x: hidden; /* لمنع أي عرض زائد */
+  overflow-x: hidden; 
 }
 
 /* ================= HEADER ================= */
@@ -93,10 +93,12 @@ body{
   background:#111;
   align-items:center;
   width: 100%;
+  gap: 5px; /* مسافة بسيطة بين العناصر */
 }
 
 input{
   flex:1;
+  min-width: 0; /* منع الخروج عن الشاشة */
   padding:10px;
   border:none;
   border-radius:20px;
@@ -104,12 +106,12 @@ input{
 }
 
 button{
-  margin-left:5px;
   padding:10px 12px;
   border:none;
   border-radius:20px;
   background:var(--maroon);
   color:white;
+  flex-shrink: 0; /* الأزرار ما تصغرش */
 }
 
 /* ================= EMOJI BOX ================= */
@@ -126,7 +128,6 @@ button{
   overflow:auto;
   z-index:999;
   font-size:22px;
-  /* تقسيم الإيموجي لضمان عرضها كرموز وليس كصورة */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
 }
@@ -198,15 +199,16 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// إدخال الإيموجي كرموز نصية لضمان عدم ظهور علامة استفهام
-const emojis = "😂😅🤣😍😊😭😎👍👌🙏💯🔥❤️🚀⚡🎉🎮📱🧠💰🏆✨😡😱😴🤔😇😘😜😋😤😈👻💩🥳💥🌟🎯🥇🥈🥉".split("");
+// إدخال الإيموجي باستخدام النقاط الرمزية (CodePoints) لضمان التوافق
+const emojiList = [128514,128517,128518,128525,128522,128557,128526,128077,128076,128591,128175,128293,10084,128640,9889,127874,127918,128241,129504,128176,127942,10024,128545,128561,128564,129303,128519,128536,129313,128523,128548,128520,128123,128169,129395,128165,127775,127919,129351,129352,129353];
 const emojiBox = document.getElementById("emojiBox");
-emojis.forEach(emo => {
+
+emojiList.forEach(code => {
     let span = document.createElement("span");
-    span.innerText = emo;
+    span.innerText = String.fromCodePoint(code);
     span.style.cursor = "pointer";
     span.onclick = () => {
-        document.getElementById("msg").value += emo;
+        document.getElementById("msg").value += span.innerText;
         document.getElementById("emojiBox").style.display = "none";
     };
     emojiBox.appendChild(span);
@@ -236,7 +238,7 @@ chatRef.on("child_added",s=>{
     <div class="meta">${m.time}</div>`;
   }
   else if(m.type==="file"){
-    div.innerHTML=`📎 <a href="${m.text}" target="_blank">${m.name}</a>
+    div.innerHTML=`📎 <a href="${m.text}" target="_blank">ملف</a>
     <div class="meta">${m.time}</div>`;
   }
   else{
@@ -247,7 +249,6 @@ chatRef.on("child_added",s=>{
   div.scrollIntoView({behavior:"smooth"});
 });
 
-// باقي الدوال الخاصة بك كما هي تماماً
 document.getElementById("msg").addEventListener("input",()=>{
   typingRef.set({user:uid,typing:true});
   clearTimeout(window.t);
