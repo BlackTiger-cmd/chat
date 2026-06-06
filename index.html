@@ -198,7 +198,9 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// الإيموجي تم تحويلها لـ unicode entities لضمان ظهورها
+// متغير لتحديد ما إذا كان التحميل الأولي قد انتهى
+let isInitialLoad = true;
+
 const emojis = ["&#128514;","&#128517;","&#129315;","&#128525;","&#128522;","&#128557;","&#128526;","&#128077;","&#128076;","&#128591;","&#128175;","&#128293;","&#10084;","&#128640;","&#9889;","&#127873;","&#127918;","&#128241;","&#129504;","&#128176;","&#127942;","&#10024;","&#128545;","&#128561;","&#128564;","&#129300;","&#128519;","&#128536;","&#128540;","&#128523;","&#128548;","&#128520;","&#128123;","&#128169;","&#129395;","&#128165;","&#127775;","&#127919;","&#129351;","&#129352;","&#129353;","&#127874;"];
 const emojiBox = document.getElementById("emojiBox");
 emojis.forEach(emo => {
@@ -238,7 +240,19 @@ chatRef.on("child_added",s=>{
     div.innerHTML=`${m.text}<div class="meta">${m.time}</div>`;
   }
   document.getElementById("chat").appendChild(div);
-  div.scrollIntoView({behavior:"smooth"});
+  
+  // إذا كان التحميل الأولي انتهى، نستخدم الحركة السلسة، وإلا نقفز للآخر مباشرة
+  if(!isInitialLoad) {
+      div.scrollIntoView({behavior:"smooth"});
+  } else {
+      document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+  }
+});
+
+// عند انتهاء تحميل القيمة الأولى من Firebase
+chatRef.once("value", () => {
+    isInitialLoad = false;
+    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
 });
 
 document.getElementById("msg").addEventListener("input",()=>{
