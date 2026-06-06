@@ -152,7 +152,7 @@ button{
 
 <div class="header">
   <button onclick="toggleSettings()" style="background:none; border:none; color:var(--gold); font-size:20px;">⚙️</button>
-  <div id="title">AKLAT PRO CHAT</div>
+  <div id="title">اسم العميل</div>
   <div class="statusDot"></div>
 </div>
 
@@ -250,12 +250,18 @@ document.getElementById("msg").addEventListener("input",()=>{
 
 typingRef.on("value",s=>{
   let v=s.val();
-  document.getElementById("typing").style.display = v?.typing ? "block":"none";
+  // تعديل منطق جاري الكتابة: يظهر فقط إذا كان الطرف الآخر هو الذي يكتب
+  if(v && v.typing && v.user !== uid) {
+      document.getElementById("typing").style.display = "block";
+  } else {
+      document.getElementById("typing").style.display = "none";
+  }
 });
 
 function toggleEmoji(){
   let e=document.getElementById("emojiBox");
-  e.style.display = e.style.display==="grid"?"none":"grid";
+  // تبديل العرض بين grid و none
+  e.style.display = (e.style.display === "grid") ? "none" : "grid";
 }
 
 function toggleAttach(){
@@ -292,3 +298,4 @@ function pickFile(){ document.getElementById("file").click(); }
 </script>
 </body>
 </html>
+
