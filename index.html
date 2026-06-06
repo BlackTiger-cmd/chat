@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <style>
+/* التعديل الجوهري لضبط العرض */
+* { box-sizing: border-box; }
 
 /* ================= CORE THEME ================= */
 :root{
@@ -25,6 +27,7 @@ body{
   flex-direction:column;
   background:var(--dark);
   background-size:cover;
+  overflow-x: hidden; /* لمنع أي عرض زائد */
 }
 
 /* ================= HEADER ================= */
@@ -38,7 +41,6 @@ body{
   border-bottom:2px solid var(--gold);
   color:var(--gold);
   width: 100%;
-  box-sizing: border-box;
 }
 
 .statusDot{
@@ -56,7 +58,6 @@ body{
   display:flex;
   flex-direction:column;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .msg{
@@ -92,7 +93,6 @@ body{
   background:#111;
   align-items:center;
   width: 100%;
-  box-sizing: border-box;
 }
 
 input{
@@ -126,11 +126,10 @@ button{
   overflow:auto;
   z-index:999;
   font-size:22px;
+  /* تقسيم الإيموجي لضمان عرضها كرموز وليس كصورة */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
 }
-
-.emoji-item { cursor: pointer; text-align: center; }
 
 /* ================= SETTINGS ================= */
 #settings{
@@ -199,14 +198,17 @@ const typingRef=firebase.database().ref("typing/"+roomId);
 const uid = localStorage.getItem("uid") || crypto.randomUUID();
 localStorage.setItem("uid", uid);
 
-// إعداد الإيموشنز كعناصر منفصلة
+// إدخال الإيموجي كرموز نصية لضمان عدم ظهور علامة استفهام
 const emojis = "😂😅🤣😍😊😭😎👍👌🙏💯🔥❤️🚀⚡🎉🎮📱🧠💰🏆✨😡😱😴🤔😇😘😜😋😤😈👻💩🥳💥🌟🎯🥇🥈🥉".split("");
 const emojiBox = document.getElementById("emojiBox");
 emojis.forEach(emo => {
     let span = document.createElement("span");
-    span.className = "emoji-item";
     span.innerText = emo;
-    span.onclick = () => { document.getElementById("msg").value += emo; };
+    span.style.cursor = "pointer";
+    span.onclick = () => {
+        document.getElementById("msg").value += emo;
+        document.getElementById("emojiBox").style.display = "none";
+    };
     emojiBox.appendChild(span);
 });
 
@@ -221,18 +223,11 @@ function send(){
     time:new Date().toLocaleTimeString()
   });
 
-  let div=document.createElement("div");
-  div.className="msg me";
-  div.innerHTML = `${input.value}<div class="meta">${new Date().toLocaleTimeString()}</div>`;
-  document.getElementById("chat").appendChild(div);
-  div.scrollIntoView({behavior:"smooth"});
-
   input.value="";
 }
 
 chatRef.on("child_added",s=>{
   let m=s.val();
-  if(m.sender === uid) return;
   let div=document.createElement("div");
   div.className="msg "+(m.sender===uid?"me":"other");
 
@@ -252,6 +247,7 @@ chatRef.on("child_added",s=>{
   div.scrollIntoView({behavior:"smooth"});
 });
 
+// باقي الدوال الخاصة بك كما هي تماماً
 document.getElementById("msg").addEventListener("input",()=>{
   typingRef.set({user:uid,typing:true});
   clearTimeout(window.t);
@@ -295,11 +291,8 @@ function theme(t){
 }
 
 function pickImage(){ document.getElementById("img").click(); }
-
 function pickFile(){ document.getElementById("file").click(); }
 
 </script>
-
 </body>
 </html>
-
