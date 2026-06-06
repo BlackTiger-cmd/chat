@@ -155,7 +155,7 @@ button{
 <button onclick="pickFile()">📎</button>
 
 <input id="msg" placeholder="اكتب...">
-<button onclick="send()">إرسال</button>
+<button id="sendBtn">إرسال</button>
 
 <input type="file" id="img" hidden>
 <input type="file" id="file" hidden>
@@ -178,6 +178,7 @@ button{
 </div>
 
 <script>
+
 firebase.initializeApp({
   apiKey:"YOUR_KEY",
   authDomain:"YOUR_DOMAIN",
@@ -204,6 +205,11 @@ function send(){
 
   input.value="";
 }
+
+/* 🔥 FIX: ربط الزر بشكل مباشر (ده سبب المشكلة عندك) */
+document.addEventListener("DOMContentLoaded", ()=>{
+  document.getElementById("sendBtn").onclick = send;
+});
 
 chatRef.on("child_added",s=>{
   let m=s.val();
@@ -277,112 +283,10 @@ function theme(t){
 
 function pickImage(){ document.getElementById("img").click(); }
 
-document.getElementById("img").onchange=async e=>{
-  let f=e.target.files[0];
-  let form=new FormData();
-  form.append("file",f);
-  form.append("upload_preset","YOUR_PRESET");
-
-  let r=await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD/image/upload",{
-    method:"POST",
-    body:form
-  });
-
-  let d=await r.json();
-
-  chatRef.push({
-    type:"image",
-    text:d.secure_url,
-    sender:uid,
-    time:new Date().toLocaleTimeString()
-  });
-};
-
 function pickFile(){ document.getElementById("file").click(); }
 
-document.getElementById("file").onchange=async e=>{
-  let f=e.target.files[0];
-  let form=new FormData();
-  form.append("file",f);
-  form.append("upload_preset","YOUR_PRESET");
-
-  let r=await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD/upload",{
-    method:"POST",
-    body:form
-  });
-
-  let d=await r.json();
-
-  chatRef.push({
-    type:"file",
-    text:d.secure_url,
-    name:f.name,
-    sender:uid,
-    time:new Date().toLocaleTimeString()
-  });
-};
-
 window.send = send;
-</script>
 
-<!-- ================= WHATSAPP PRO LAYER (ADDITION ONLY) ================= -->
-<script>
-(function(){
-
-const statusRef = firebase.database().ref("status/" + roomId);
-
-/* ONLINE / OFFLINE */
-function setOnline(){
-  statusRef.set({uid,state:"online",time:Date.now()});
-}
-function setOffline(){
-  statusRef.set({uid,state:"offline",time:Date.now()});
-}
-setOnline();
-window.addEventListener("beforeunload", setOffline);
-
-/* SEEN */
-chatRef.on("child_added",s=>{
-  const msg=s.val();
-  if(msg.sender!==uid){
-    setTimeout(()=>s.ref.update({seen:true}),400);
-  }
-});
-
-/* STATUS DOT */
-statusRef.on("value",s=>{
-  const v=s.val();
-  const dot=document.querySelector(".statusDot");
-  if(dot) dot.style.background=(v&&v.state==="online")?"lime":"gray";
-});
-
-/* TYPING */
-typingRef.on("value",s=>{
-  const v=s.val();
-  const el=document.getElementById("typing");
-  if(el) el.style.display=v?.typing?"block":"none";
-});
-
-})();
-</script>
-
-<!-- ================= BLOCKED WORDS (ADDITION ONLY) ================= -->
-<script>
-const blockedWords=["كلمة1","كلمة2","ممنوع","سب","شتيمة"];
-
-(function(){
-  const originalSend=window.send;
-  window.send=function(){
-    let input=document.getElementById("msg");
-    for(let w of blockedWords){
-      if(input.value.includes(w)){
-        alert("❌ ممنوع إرسال هذه الكلمة");
-        return;
-      }
-    }
-    return originalSend.apply(this,arguments);
-  };
-})();
 </script>
 
 </body>
